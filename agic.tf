@@ -10,7 +10,8 @@ resource "azurerm_public_ip" "ag-pip" {
 locals {
   backend_address_pool_name      = "${azurerm_virtual_network.k8s-vnet.name}-beap"
   frontend_port_name             = "${azurerm_virtual_network.k8s-vnet.name}-feport"
-  frontend_ip_configuration_name = "${azurerm_virtual_network.k8s-vnet.name}-feip"
+  frontend_public_ip_configuration_name = "public-ip-configuration"
+  frontend_private_ip_configuration_name = "private-ip-configuration"
   http_setting_name              = "${azurerm_virtual_network.k8s-vnet.name}-be-htst"
   listener_name                  = "${azurerm_virtual_network.k8s-vnet.name}-httplstn"
   request_routing_rule_name      = "${azurerm_virtual_network.k8s-vnet.name}-rqrt"
@@ -38,10 +39,17 @@ resource_group_name = azurerm_resource_group.k8s-rg.name
     port = 80
   }
 
-  frontend_ip_configuration {
-    name                 = local.frontend_ip_configuration_name
-    public_ip_address_id = azurerm_public_ip.ag-pip.id
-  }
+frontend_ip_configuration {
+  name                 = local.frontend_public_ip_configuration_name
+  public_ip_address_id = azurerm_public_ip.ag-pip.id
+}
+
+frontend_ip_configuration {
+  name                 = local.frontend_private_ip_configuration_name
+  private_ip_address   = "172.0.34.9"
+  subnet_id            = azurerm_subnet.ingress-appgateway-subnet.id
+  private_ip_address_allocation = "Static"
+}
 
   backend_address_pool {
     name = local.backend_address_pool_name
@@ -59,7 +67,7 @@ resource_group_name = azurerm_resource_group.k8s-rg.name
 
   http_listener {
     name                           = local.listener_name
-    frontend_ip_configuration_name = local.frontend_ip_configuration_name
+    frontend_ip_configuration_name = local.frontend_public_ip_configuration_name
     frontend_port_name             = local.frontend_port_name
     protocol                       = "Http"
   }

@@ -16,7 +16,7 @@
 ### Deploy sample app and ingress
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/Azure/application-gateway-kubernetes-ingress/master/docs/examples/aspnetapp.yaml
+kubectl apply -f test-app.yaml
 ```
 
 Will be able to access the app via the public IP of the application gateway.
