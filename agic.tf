@@ -18,9 +18,27 @@ locals {
   redirect_configuration_name    = "${azurerm_virtual_network.k8s-vnet.name}-rdrcfg"
 }
 
+resource "azurerm_user_assigned_identity" "agic_identity" {
+  name                = "agic-identity"
+  location = azurerm_resource_group.k8s-rg.location
+  resource_group_name = azurerm_resource_group.k8s-rg.name
+}
+
+resource "azurerm_role_assignment" "assign_contributor_agic" {
+  scope                = azurerm_application_gateway.network.id
+  role_definition_name = "Contributor"
+  principal_id         = azurerm_user_assigned_identity.agic_identity.principal_id
+}
+
+resource "azurerm_role_assignment" "assign_reader_appgw_rg" {
+  scope                = azurerm_resource_group.k8s-rg.id
+  role_definition_name = "Reader"
+  principal_id         = azurerm_user_assigned_identity.agic_identity.principal_id
+}
+
 resource "azurerm_application_gateway" "network" {
   name                = "example-appgateway"
-resource_group_name = azurerm_resource_group.k8s-rg.name
+  resource_group_name = azurerm_resource_group.k8s-rg.name
   location            = azurerm_resource_group.k8s-rg.location
 
   sku {
@@ -39,17 +57,22 @@ resource_group_name = azurerm_resource_group.k8s-rg.name
     port = 80
   }
 
-frontend_ip_configuration {
-  name                 = local.frontend_public_ip_configuration_name
-  public_ip_address_id = azurerm_public_ip.ag-pip.id
-}
+  identity {
+    type = "UserAssigned"
+    identity_ids  = [azurerm_user_assigned_identity.agic_identity.id]
+  }
 
-frontend_ip_configuration {
-  name                 = local.frontend_private_ip_configuration_name
-  private_ip_address   = "172.0.34.9"
-  subnet_id            = azurerm_subnet.ingress-appgateway-subnet.id
-  private_ip_address_allocation = "Static"
-}
+  frontend_ip_configuration {
+    name                 = local.frontend_public_ip_configuration_name
+    public_ip_address_id = azurerm_public_ip.ag-pip.id
+  }
+
+  frontend_ip_configuration {
+    name                 = local.frontend_private_ip_configuration_name
+    private_ip_address   = "172.0.34.9"
+    subnet_id            = azurerm_subnet.ingress-appgateway-subnet.id
+    private_ip_address_allocation = "Static"
+  }
 
   backend_address_pool {
     name = local.backend_address_pool_name
@@ -81,3 +104,7 @@ frontend_ip_configuration {
     backend_http_settings_name = local.http_setting_name
   }
 }
+
+# output "agic_identity_id" {
+#   value = azurerm_user_assigned_identity.agic_identity.id
+# }
