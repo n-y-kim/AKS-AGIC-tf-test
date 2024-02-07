@@ -10,6 +10,7 @@
 
 - Service principal with `Contributor` role for the subscription for the AKS cluster.
   - Retrieve `client_id` and `client_secret` and add them to `variables.tf` file.
+- Follow [this](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-private-deployment?tabs=portal) documentation to enable private ip only preview for Application Gateway Standard V2. This settings must be done before `terraform apply`.
 
 ## After terraform apply
 
@@ -19,4 +20,10 @@
 kubectl apply -f test-app.yaml
 ```
 
-Will be able to access the app via the public IP of the application gateway.
+Since we only have private ip, access the application gateway from the AKS cluster's pod.
+
+```bash
+kubectl run test-pod --image=nginx
+kubectl exec -it test-pod -- /bin/bash
+curl -I http://<app-gateway-ip>
+```

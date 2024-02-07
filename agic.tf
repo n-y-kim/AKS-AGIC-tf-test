@@ -62,10 +62,10 @@ resource "azurerm_application_gateway" "network" {
     identity_ids  = [azurerm_user_assigned_identity.agic_identity.id]
   }
 
-  frontend_ip_configuration {
-    name                 = local.frontend_public_ip_configuration_name
-    public_ip_address_id = azurerm_public_ip.ag-pip.id
-  }
+  # frontend_ip_configuration {
+  #   name                 = local.frontend_public_ip_configuration_name
+  #   public_ip_address_id = azurerm_public_ip.ag-pip.id
+  # }
 
   frontend_ip_configuration {
     name                 = local.frontend_private_ip_configuration_name
@@ -90,7 +90,7 @@ resource "azurerm_application_gateway" "network" {
 
   http_listener {
     name                           = local.listener_name
-    frontend_ip_configuration_name = local.frontend_public_ip_configuration_name
+    frontend_ip_configuration_name = local.frontend_private_ip_configuration_name
     frontend_port_name             = local.frontend_port_name
     protocol                       = "Http"
   }
