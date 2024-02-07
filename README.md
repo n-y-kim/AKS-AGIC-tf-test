@@ -1,10 +1,18 @@
 # AKS-AGIC-tf-test
 
+## Architecture
+
+- Resource group with virtual network and subnets(node, pod, agic)
+- Application Gateway Standard V2 with private ip only
+- AKS cluster using Azure CNI v2 with Managed Identity(System Assigned)
+- Application Gateway Ingress Controller(AGIC) with RBAC settings to access AKS cluster.
+
 ## Terraform flow
 
 1. Create `agic-test-rg` resource group, virtual network and subents(node, pod, agic)
-2. Create application gateway and public IP
+2. Create application gateway.
 3. Create AKS cluster with AGIC id.
+4. Add RBAC for AGIC to access AKS cluster.
 
 ## Prerequisites
 
