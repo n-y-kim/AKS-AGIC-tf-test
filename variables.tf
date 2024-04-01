@@ -1,6 +1,6 @@
 variable "resource_count" {
   description = "The number of resource groups to create"
-  default     = 5
+  default     = 1
 }
 
 variable "cluster_name" {
