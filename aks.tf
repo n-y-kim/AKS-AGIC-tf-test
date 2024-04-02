@@ -1,6 +1,10 @@
+locals {
+  cluster_names = [ for i in range(var.resource_count) : "aks-${i}"]
+}
+
 resource "azurerm_kubernetes_cluster" "k8s" {
   count               = var.resource_count
-  name                = "aks-${count.index}"
+  name                = local.cluster_names[count.index]
   resource_group_name = azurerm_resource_group.k8s-rg[count.index].name
   location            = azurerm_resource_group.k8s-rg[count.index].location
 
@@ -31,6 +35,6 @@ resource "azurerm_kubernetes_cluster" "k8s" {
     network_plugin = "azure"
   }
   tags = {
-    Environment = "Development"
+    Environment = "Development -"
   }
 }
